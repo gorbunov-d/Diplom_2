@@ -1,7 +1,8 @@
 import allure
 import requests
 
-from utils.endpoints import AUTH_USER, AUTH_REGISTER, AUTH_LOGIN
+from utils.endpoints import AUTH_USER
+from utils.messages import UNAUTHORIZED
 
 
 @allure.suite("User")
@@ -9,17 +10,11 @@ from utils.endpoints import AUTH_USER, AUTH_REGISTER, AUTH_LOGIN
 class TestUserUpdate:
 
     @allure.title("Authorized user can update any field")
-    def test_user_update_authorized(self, unique_user_payload):
-        requests.post(AUTH_REGISTER, json=unique_user_payload)
-        login = requests.post(
-            AUTH_LOGIN,
-            json={"email": unique_user_payload["email"], "password": unique_user_payload["password"]},
-        )
-        assert login.status_code == 200
-        token = login.json().get("accessToken")
-        headers = {"Authorization": token}
+    def test_user_update_authorized(self, user_context):
+        payload, tokens = user_context
+        headers = {"Authorization": tokens.get("accessToken")}
 
-        new_data = {"name": unique_user_payload["name"] + "x"}
+        new_data = {"name": payload["name"] + "x"}
         resp = requests.patch(AUTH_USER, headers=headers, json=new_data)
         assert resp.status_code in (200, 403)
         body = resp.json()
@@ -36,4 +31,4 @@ class TestUserUpdate:
         assert resp.status_code == 401
         body = resp.json()
         assert body.get("success") is False
-        assert body.get("message") == "You should be authorised"
+        assert body.get("message") == UNAUTHORIZED

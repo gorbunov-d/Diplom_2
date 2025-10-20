@@ -1,6 +1,6 @@
 import os
 
-BASE = os.getenv("SB_BASE_URL", "https://stellarburgers.nomoreparties.site")
+BASE = os.getenv("SB_BASE_URL", "https://stellarburgers.education-services.ru")
 
 AUTH_REGISTER = f"{BASE}/api/auth/register"
 AUTH_LOGIN = f"{BASE}/api/auth/login"

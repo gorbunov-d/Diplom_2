@@ -1,37 +1,16 @@
-import os
-import random
-import string
 from typing import Dict, List, Tuple
 
 import pytest
 import requests
 
-from utils.endpoints import (
-    AUTH_REGISTER,
-    AUTH_LOGIN,
-    AUTH_USER,
-    INGREDIENTS,
-)
-
-
-def _rand(n: int = 10) -> str:
-    return "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(n))
-
-
-def _delete_user(access_token: str) -> None:
-    if not access_token:
-        return
-    headers = {"Authorization": access_token}
-    try:
-        requests.delete(AUTH_USER, headers=headers, timeout=10)
-    except Exception:
-        pass
+from utils.endpoints import AUTH_REGISTER, AUTH_LOGIN, INGREDIENTS
+from utils.helpers import rand, delete_user
 
 
 @pytest.fixture
 def unique_user_payload() -> Dict[str, str]:
-    email = f"{_rand()}@example.com"
-    return {"email": email, "password": _rand(12), "name": _rand(8)}
+    email = f"{rand()}@example.com"
+    return {"email": email, "password": rand(12), "name": rand(8)}
 
 
 @pytest.fixture
@@ -39,7 +18,7 @@ def user_context(unique_user_payload) -> Tuple[Dict[str, str], Dict[str, str]]:
     reg = requests.post(AUTH_REGISTER, json=unique_user_payload)
     assert reg.status_code in (200, 403)
     if reg.status_code == 403:
-        unique_user_payload["email"] = f"{_rand()}@example.com"
+        unique_user_payload["email"] = f"{rand()}@example.com"
         reg = requests.post(AUTH_REGISTER, json=unique_user_payload)
         assert reg.status_code == 200
     login_resp = requests.post(
@@ -51,7 +30,7 @@ def user_context(unique_user_payload) -> Tuple[Dict[str, str], Dict[str, str]]:
     try:
         yield unique_user_payload, tokens
     finally:
-        _delete_user(tokens.get("accessToken", ""))
+        delete_user(tokens.get("accessToken"))
 
 
 @pytest.fixture

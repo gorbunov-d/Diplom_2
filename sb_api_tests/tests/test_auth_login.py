@@ -2,6 +2,7 @@ import allure
 import requests
 
 from utils.endpoints import AUTH_LOGIN, AUTH_REGISTER
+from utils.messages import LOGIN_WRONG_CREDENTIALS
 
 
 @allure.suite("Auth")
@@ -30,4 +31,4 @@ class TestAuthLogin:
         assert resp.status_code == 401
         body = resp.json()
         assert body.get("success") is False
-        assert body.get("message") == "email or password are incorrect"
+        assert body.get("message") == LOGIN_WRONG_CREDENTIALS

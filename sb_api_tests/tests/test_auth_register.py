@@ -2,7 +2,8 @@ import allure
 import pytest
 import requests
 
-from utils.endpoints import AUTH_REGISTER, AUTH_LOGIN, AUTH_USER
+from utils.endpoints import AUTH_REGISTER
+from utils.messages import REGISTER_EXISTS, REGISTER_MISSING_FIELDS
 
 
 @allure.suite("Auth")
@@ -18,15 +19,6 @@ class TestAuthRegister:
         if resp.status_code == 200:
             assert body.get("success") is True
             assert "accessToken" in body and "refreshToken" in body
-            # cleanup
-            login = requests.post(
-                AUTH_LOGIN,
-                json={"email": unique_user_payload["email"], "password": unique_user_payload["password"]},
-            )
-            if login.status_code == 200:
-                token = login.json().get("accessToken", "")
-                if token:
-                    requests.delete(AUTH_USER, headers={"Authorization": token})
         else:
             assert body.get("success") is False
 
@@ -38,7 +30,7 @@ class TestAuthRegister:
         assert second.status_code == 403
         body = second.json()
         assert body.get("success") is False
-        assert body.get("message") == "User already exists"
+        assert body.get("message") == REGISTER_EXISTS
 
     @allure.title("Register with missing required field returns 403")
     @pytest.mark.parametrize("missing_field", ["email", "password", "name"])
@@ -49,4 +41,4 @@ class TestAuthRegister:
         assert resp.status_code == 403
         body = resp.json()
         assert body.get("success") is False
-        assert body.get("message") == "Email, password and name are required fields"
+        assert body.get("message") == REGISTER_MISSING_FIELDS
