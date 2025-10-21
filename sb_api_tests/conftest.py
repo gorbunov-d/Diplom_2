@@ -4,31 +4,25 @@ import pytest
 import requests
 
 from utils.endpoints import AUTH_REGISTER, AUTH_LOGIN, INGREDIENTS
-from utils.helpers import rand, delete_user
+from utils.helpers import delete_user
+from utils.data import make_user_payload
 
 
 @pytest.fixture
-def unique_user_payload() -> Dict[str, str]:
-    email = f"{rand()}@example.com"
-    return {"email": email, "password": rand(12), "name": rand(8)}
-
-
-@pytest.fixture
-def user_context(unique_user_payload) -> Tuple[Dict[str, str], Dict[str, str]]:
-    reg = requests.post(AUTH_REGISTER, json=unique_user_payload)
-    assert reg.status_code in (200, 403)
+def user_context() -> Tuple[Dict[str, str], Dict[str, str]]:
+    # Предусловия без assert: регистрируем и логинимся, ошибки валидирует сам тест
+    payload = make_user_payload()
+    reg = requests.post(AUTH_REGISTER, json=payload)
     if reg.status_code == 403:
-        unique_user_payload["email"] = f"{rand()}@example.com"
-        reg = requests.post(AUTH_REGISTER, json=unique_user_payload)
-        assert reg.status_code == 200
+        payload["email"] = make_user_payload()["email"]
+        reg = requests.post(AUTH_REGISTER, json=payload)
     login_resp = requests.post(
         AUTH_LOGIN,
-        json={"email": unique_user_payload["email"], "password": unique_user_payload["password"]},
+        json={"email": payload["email"], "password": payload["password"]},
     )
-    assert login_resp.status_code == 200
     tokens = login_resp.json()
     try:
-        yield unique_user_payload, tokens
+        yield payload, tokens
     finally:
         delete_user(tokens.get("accessToken"))
 

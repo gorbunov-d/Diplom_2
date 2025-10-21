@@ -22,12 +22,9 @@ class TestOrders:
     def test_create_order_without_auth(self, ingredients_list):
         payload = {"ingredients": ingredients_list[:2]}
         resp = requests.post(ORDERS, json=payload)
-        assert resp.status_code in (200, 401)
+        assert resp.status_code == 200
         body = resp.json()
-        if resp.status_code == 200:
-            assert body.get("success") is True
-        else:
-            assert body.get("success") is False
+        assert body.get("success") is True
 
     @allure.title("Create order without ingredients returns 400")
     def test_create_order_without_ingredients(self, auth_headers):
@@ -40,11 +37,10 @@ class TestOrders:
     @allure.title("Create order with invalid ingredient id returns error")
     def test_create_order_with_invalid_ingredient(self, auth_headers):
         resp = requests.post(ORDERS, headers=auth_headers, json={"ingredients": ["invalid-hash"]})
-        assert resp.status_code in (400, 500)
-        if resp.status_code == 400:
-            body = resp.json()
-            assert body.get("success") is False
-            assert body.get("message")
+        assert resp.status_code == 400
+        body = resp.json()
+        assert body.get("success") is False
+        assert body.get("message")
 
     @allure.title("Get user orders: authorized success; unauthorized 401")
     def test_get_user_orders_auth_and_unauth(self, auth_headers):

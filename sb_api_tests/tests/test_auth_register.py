@@ -12,8 +12,10 @@ class TestAuthRegister:
 
     @allure.title("Register unique user succeeds")
     @allure.description("Create a new user with unique email returns 200 and tokens")
-    def test_register_unique_user(self, unique_user_payload):
-        resp = requests.post(AUTH_REGISTER, json=unique_user_payload)
+    def test_register_unique_user(self):
+        from utils.data import make_user_payload
+        payload = make_user_payload()
+        resp = requests.post(AUTH_REGISTER, json=payload)
         assert resp.status_code in (200, 403)
         body = resp.json()
         if resp.status_code == 200:
@@ -34,8 +36,9 @@ class TestAuthRegister:
 
     @allure.title("Register with missing required field returns 403")
     @pytest.mark.parametrize("missing_field", ["email", "password", "name"])
-    def test_register_missing_field(self, missing_field, unique_user_payload):
-        payload = dict(unique_user_payload)
+    def test_register_missing_field(self, missing_field):
+        from utils.data import make_user_payload
+        payload = make_user_payload()
         payload.pop(missing_field)
         resp = requests.post(AUTH_REGISTER, json=payload)
         assert resp.status_code == 403
