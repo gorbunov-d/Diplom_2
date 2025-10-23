@@ -3,6 +3,7 @@ import requests
 
 from utils.endpoints import AUTH_USER
 from utils.messages import UNAUTHORIZED
+from utils.helpers import make_user_payload
 
 
 @allure.suite("User")
@@ -23,7 +24,6 @@ class TestUserUpdate:
 
     @allure.title("Unauthorized user cannot update user data")
     def test_user_update_unauthorized(self):
-        from utils.data import make_user_payload
         payload = make_user_payload()
         new_data = {"name": payload["name"] + "x"}
         resp = requests.patch(AUTH_USER, json=new_data)

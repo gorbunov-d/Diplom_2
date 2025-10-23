@@ -1,6 +1,6 @@
 import random
 import string
-from typing import Optional
+from typing import Optional, Dict
 
 import requests
 
@@ -20,6 +20,11 @@ def delete_user(access_token: Optional[str]) -> None:
     except Exception:
         # Network or API hiccups should not fail teardown
         pass
+
+
+def make_user_payload() -> Dict[str, str]:
+    email = f"{rand()}@example.com"
+    return {"email": email, "password": rand(12), "name": rand(8)}
 
 
 
